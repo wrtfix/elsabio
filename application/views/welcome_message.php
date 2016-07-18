@@ -51,16 +51,17 @@ function getProximoEquipo(){
     return nombres[proximo_equipo];
 }
 
-function getPregunta(){
+function getPregunta(equipo){
     inicio = proximaPregunta();
     $("#pregunta").html("");
-    $("#pregunta").append("<h2> <center> Juega "+getProximoEquipo()+" <center> </h2>");
+    $("#pregunta").append("<h2> <center> Juega "+equipo+" <center> </h2>");
     $("#pregunta").append("<h3>"+result[inicio].pregunta+"</h3><p>"+result[inicio].opciones+"</p>");
+    $("#showRespuesta").html("");
 }
 
 function getRespuesta(){
     $("#respuesta").html("");
-    $("#respuesta").append("<h3>"+result[inicio].repuesta+"</h3>");
+    $("#respuesta").html("<h3>"+result[inicio].repuesta+"</h3>");
 }
 
 
@@ -128,7 +129,7 @@ $(document).ready(function(){
         $("#p4").hide();
         $("#finalizar").hide();
         $("#p3").show();
-        getPregunta();
+        getPregunta(getProximoEquipo());
         audioElement.play();
         $("#finalizar").show();
         regresiva();
@@ -163,8 +164,7 @@ $(document).ready(function(){
         $("#puntuacion").append("<tr><td>"+nombre+"</td><td><input type='number' id='"+nombre.replace(" ","_")+"' value='0' disabled></td></tr>");
       });    
       $("#puntuacion").append("</tbody>");
-
-        getPregunta();
+        getPregunta(nombres[proximo_equipo]);
         audioElement.play();
         var valor = $("#tiempo").val();
         if (valor != ''){
@@ -179,25 +179,21 @@ $(document).ready(function(){
        $("#clock").hide();
        getRespuesta();
        audioElement.pause();
+       audioElement3.play();
        inicio = inicio + 1;
        $("#siguiente").val("Incorrecto");
     });
 
-    $("#verRespuesta").mouseover(function(){
-       $("#showRespuesta").append("Repuesta: "+result[inicio].repuesta);
-    });
-
-    $("#verRespuesta").mouseout(function(){
-       $("#showRespuesta").html("");
+    $("#verRespuesta").click(function(){
+       $("#showRespuesta").html("Repuesta: "+result[inicio].repuesta);
     });
 
     $("#correcto").click(function(){
         var elem = "#"+nombres[proximo_equipo].replace(" ","_");
         var valor = parseInt($(elem).val()) + 1;
         $(elem).val(valor);
-        $("#siguiente").val("Siguiente");
-        $("#correcto").hide();
         audioElement2.play();
+        getPregunta(nombres[proximo_equipo]);
     });
 
 
@@ -205,10 +201,11 @@ $(document).ready(function(){
 
 </script>
 <body style="font-family:'MyWebFont';background-image: url(http://www.snazzyspace.com/wallpapers/7e7e7e_pastel-stripes.png);">
-<center>
-  <img data-src="holder.js/140x140" class="img-circle" alt="140x140" src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9InllcyI/PjxzdmcgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB3aWR0aD0iMTQwIiBoZWlnaHQ9IjE0MCIgdmlld0JveD0iMCAwIDE0MCAxNDAiIHByZXNlcnZlQXNwZWN0UmF0aW89Im5vbmUiPjwhLS0KU291cmNlIFVSTDogaG9sZGVyLmpzLzE0MHgxNDAKQ3JlYXRlZCB3aXRoIEhvbGRlci5qcyAyLjYuMC4KTGVhcm4gbW9yZSBhdCBodHRwOi8vaG9sZGVyanMuY29tCihjKSAyMDEyLTIwMTUgSXZhbiBNYWxvcGluc2t5IC0gaHR0cDovL2ltc2t5LmNvCi0tPjxkZWZzPjxzdHlsZSB0eXBlPSJ0ZXh0L2NzcyI+PCFbQ0RBVEFbI2hvbGRlcl8xNTVmNmNmM2MyYiB0ZXh0IHsgZmlsbDojQUFBQUFBO2ZvbnQtd2VpZ2h0OmJvbGQ7Zm9udC1mYW1pbHk6QXJpYWwsIEhlbHZldGljYSwgT3BlbiBTYW5zLCBzYW5zLXNlcmlmLCBtb25vc3BhY2U7Zm9udC1zaXplOjEwcHQgfSBdXT48L3N0eWxlPjwvZGVmcz48ZyBpZD0iaG9sZGVyXzE1NWY2Y2YzYzJiIj48cmVjdCB3aWR0aD0iMTQwIiBoZWlnaHQ9IjE0MCIgZmlsbD0iI0VFRUVFRSIvPjxnPjx0ZXh0IHg9IjQ0LjY5NTMxMjUiIHk9Ijc0LjUiPjE0MHgxNDA8L3RleHQ+PC9nPjwvZz48L3N2Zz4=" data-holder-rendered="true" style="width: 140px; height: 140px;">
-</center>
+
     <div id="p1" >
+      <center>
+        <img data-src="holder.js/140x140" class="img-circle" alt="140x140" src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9InllcyI/PjxzdmcgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB3aWR0aD0iMTQwIiBoZWlnaHQ9IjE0MCIgdmlld0JveD0iMCAwIDE0MCAxNDAiIHByZXNlcnZlQXNwZWN0UmF0aW89Im5vbmUiPjwhLS0KU291cmNlIFVSTDogaG9sZGVyLmpzLzE0MHgxNDAKQ3JlYXRlZCB3aXRoIEhvbGRlci5qcyAyLjYuMC4KTGVhcm4gbW9yZSBhdCBodHRwOi8vaG9sZGVyanMuY29tCihjKSAyMDEyLTIwMTUgSXZhbiBNYWxvcGluc2t5IC0gaHR0cDovL2ltc2t5LmNvCi0tPjxkZWZzPjxzdHlsZSB0eXBlPSJ0ZXh0L2NzcyI+PCFbQ0RBVEFbI2hvbGRlcl8xNTVmNmNmM2MyYiB0ZXh0IHsgZmlsbDojQUFBQUFBO2ZvbnQtd2VpZ2h0OmJvbGQ7Zm9udC1mYW1pbHk6QXJpYWwsIEhlbHZldGljYSwgT3BlbiBTYW5zLCBzYW5zLXNlcmlmLCBtb25vc3BhY2U7Zm9udC1zaXplOjEwcHQgfSBdXT48L3N0eWxlPjwvZGVmcz48ZyBpZD0iaG9sZGVyXzE1NWY2Y2YzYzJiIj48cmVjdCB3aWR0aD0iMTQwIiBoZWlnaHQ9IjE0MCIgZmlsbD0iI0VFRUVFRSIvPjxnPjx0ZXh0IHg9IjQ0LjY5NTMxMjUiIHk9Ijc0LjUiPjE0MHgxNDA8L3RleHQ+PC9nPjwvZz48L3N2Zz4=" data-holder-rendered="true" style="width: 140px; height: 140px;">
+      </center>
       <div id="tarjeta" style="background-image: url(img/fondo3.gif); padding: 5%; margin: 5%; border-radius: 15px;">
         <h2>Configuracion</h2>
         <hr/>
@@ -256,10 +253,9 @@ $(document).ready(function(){
       </div>
 
       <center>
-        <button type="button" class="btn btn-primary btn-lg" value="Finalizar" id="finalizar"> <span class="glyphicon glyphicon-off" aria-hidden="true"></button>
+        <button type="button" id="correcto" class="btn btn-primary btn-lg"><span class="glyphicon glyphicon-ok" aria-hidden="true"></button>
         <button type="button" class="btn btn-primary btn-lg" id="verRespuesta"> <span class="glyphicon glyphicon-eye-open" aria-hidden="true"></button>
-        <button type="button" value="Puntaje" id="puntaje" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#myModal"> <span class="glyphicon glyphicon-th-list" aria-hidden="true"></button>
-
+        <button type="button" class="btn btn-primary btn-lg" value="Finalizar" id="finalizar"> <span class="glyphicon glyphicon-remove" aria-hidden="true"></button>
       </center>
     </div>
    
@@ -267,39 +263,15 @@ $(document).ready(function(){
     <div id="p4">
         <div id="tarjeta" style="background-image: url(img/fondo3.gif); padding: 5%; margin: 5%; border-radius: 15px;">
           <center>
-            <h1>Respuesta</h1>
+            <h1>Puntuacion</h1>
           </center>
-          <div id="respuesta"></div>
-        </div>
-        <center>
-          <button type="button" id="correcto" class="btn btn-primary btn-lg"><span class="glyphicon glyphicon-ok" aria-hidden="true"></button>
-          <button type="button" id="siguiente" class="btn btn-primary btn-lg"><span class="glyphicon glyphicon-remove" aria-hidden="true"></button>
-          <button type="button" value="Puntaje" id="puntaje" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#myModal"><span class="glyphicon glyphicon-th-list" aria-hidden="true"></button>
-        </center>
-    </div>
-    
-
-   
-<!-- Modal -->
-<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-        <h4 class="modal-title" id="myModalLabel">Puntuacion</h4>
-      </div>
-      <div class="modal-body">
-        <div class="table-responsive">
           <table class="table" id="puntuacion">
           </table>
         </div>
-      </div>
+        <center>
+          <button type="button" id="siguiente" class="btn btn-primary btn-lg"><span class="glyphicon glyphicon-step-forward" aria-hidden="true"></button>
+        </center>
     </div>
-  </div>
-</div>
-
-
+    
 </body>
 </html>
