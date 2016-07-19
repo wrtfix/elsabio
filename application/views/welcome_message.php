@@ -8,6 +8,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 <script src="js/jquery.min.js"></script>
 <script src="js/bootstrap.min.js" ></script>    
 <script src="js/jquery.countdown.min.js"></script>
+<title>El sabio</title>
 </head>
 <script>
 //Variable globales
@@ -17,19 +18,10 @@ var equipos = 2;
 var proximo_equipo = 1;
 var nombres=[];
 var tiempo=60000;
+var maxPuntos = 2;
 var url = "<?=base_url() ?>index.php/welcome/getPreguntas";
 var urlKey = "<?=base_url() ?>index.php/welcome/getKey";
-function getRandomColor() {
-    var letters = '0123456789ABCDEF'.split('');
-    var color = '#';
-    for (var i = 0; i < 6; i++ ) {
-        color += letters[Math.floor(Math.random() * 16)];
-    }
-    var div = $("pregunta");
-    var color = "{background-color: "+color+"!important; padding: 5%; margin: 5%;}";
-    div.attr("style",color);
-    
-}
+var volumenAudio = true;
 
 function regresiva(){
     var fiveSeconds = new Date().getTime() + tiempo;
@@ -39,8 +31,22 @@ function regresiva(){
     });
 }
 
+function validarGanador(equipo){
+    var elem = "#"+nombres[proximo_equipo].replace(" ","_");
+    var valor = parseInt($(elem).val());
+    if (valor>=maxPuntos){
+      $("#p5").hide();
+      $("#p4").hide();
+      $("#p3").hide();
+      $("#p2").hide();
+      $("#p1").show();
+      alert("Ha ganado el equipo"+nombres[proximo_equipo]);
+    }
+    
+}
+
+
 function proximaPregunta(){
-  getRandomColor();
   return Math.floor((Math.random() * result.length));
 }
 
@@ -93,6 +99,7 @@ $(document).ready(function(){
         console.log( "second success" );
       });
     }
+    $("#p5").hide();
     $("#p4").hide();
     $("#p3").hide();
     $("#p2").hide();
@@ -137,32 +144,44 @@ $(document).ready(function(){
 
      });
 
+    $("#agregarEquipos").click(function(){
+      var aux = 1;
+      equipos = $("#jugadores").val();
+      $("#equipos").html("");
+      for (i = 0; i < equipos; i++) { 
+          $("#equipos").append("<div class='form-group form-group-lg'><label class='col-sm-2 control-label' for='formGroupInputLarge'>Equipo "+aux+"</label><div class='col-sm-10'><input type='text' class='nombre form-control' name='equipo"+i+"' value='Equipo "+aux+"'/></div>");
+            aux = aux + 1;
+      }
+    });
+
     $("#siguientep2").click(function(){
-      	equipos = $("#jugadores").val();
         $("#p1").hide();
         $("#p2").show();
         $("#p3").hide();
-        var aux = 1;
-	    for (i = 0; i < equipos; i++) { 
-        	$("#configuracion").append("<div class='form-group form-group-lg'><label class='col-sm-2 control-label' for='formGroupInputLarge'>Equipo "+aux+"</label><div class='col-sm-10'><input type='text' class='nombre form-control' name='equipo"+i+"' value='Equipo "+aux+"'/></div>");
-            aux = aux + 1;
-
-	    }
-      
     });
 
     $(".siguientep3").click(function(){
   
+      var aux = 1;
+      equipos = $("#jugadores").val();
+      $("#equipos").html("");
+      for (i = 0; i < equipos; i++) { 
+          $("#equipos").append("<div class='form-group form-group-lg'><label class='col-sm-2 control-label' for='formGroupInputLarge'>Equipo "+aux+"</label><div class='col-sm-10'><input type='text' class='nombre form-control' name='equipo"+i+"' value='Equipo "+aux+"'/></div>");
+            aux = aux + 1;
+      }
+
       $("#p1").hide();
       $("#p2").hide();
       $("#p3").show();
   
-      $("#puntuacion").append("<tbody> <tr><td>Equios</td><td>Puntaje</td></tr>");
+      $("#puntuacion").html("<tbody> <tr><td>Equios</td><td>Puntaje</td></tr>");
+      nombre = [];
       $(".nombre").each(function(elem){
         var nombre = $(this).val();
         nombres.push(nombre);
         $("#puntuacion").append("<tr><td>"+nombre+"</td><td><input type='number' id='"+nombre.replace(" ","_")+"' value='0' disabled></td></tr>");
       });    
+      maxPuntos = parseInt($("#maxPuntos").val());
       $("#puntuacion").append("</tbody>");
         getPregunta(nombres[proximo_equipo]);
         audioElement.play();
@@ -181,7 +200,7 @@ $(document).ready(function(){
        audioElement.pause();
        audioElement3.play();
        inicio = inicio + 1;
-       $("#siguiente").val("Incorrecto");
+       validarGanador(nombres[proximo_equipo]);
     });
 
     $("#verRespuesta").click(function(){
@@ -196,22 +215,55 @@ $(document).ready(function(){
         getPregunta(nombres[proximo_equipo]);
     });
 
+    $("#help").click(function(){
+        $("#p1").hide();
+        $("#p5").show();
+    });
 
+    $("#okAyuda").click(function(){
+        $("#p5").hide();
+        $("#p1").show();
+    });
+
+    $("#sonido").hide();
+    $("#mute").click(function(){
+        $(this).hide();
+        $("#sonido").show();
+        audioElement.muted = true;  
+    });
+    $("#sonido").click(function(){
+        $(this).hide();
+        $("#mute").show();
+        audioElement.muted = false;  
+    });
 });
 
 </script>
-<body style="font-family:'MyWebFont';background-image: url(http://www.snazzyspace.com/wallpapers/7e7e7e_pastel-stripes.png);">
+<style type="text/css">
+body{
+  font-family:'MyWebFont';background-image: url(http://www.snazzyspace.com/wallpapers/7e7e7e_pastel-stripes.png);
+}
+.tarjeta{
+  background-image: url(img/fondo3.gif); padding: 5%; margin: 5%; border-radius: 15px;
+}
+</style>
+
+<body>
 
     <div id="p1" >
       <center>
-        <img data-src="holder.js/140x140" class="img-circle" alt="140x140" src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9InllcyI/PjxzdmcgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB3aWR0aD0iMTQwIiBoZWlnaHQ9IjE0MCIgdmlld0JveD0iMCAwIDE0MCAxNDAiIHByZXNlcnZlQXNwZWN0UmF0aW89Im5vbmUiPjwhLS0KU291cmNlIFVSTDogaG9sZGVyLmpzLzE0MHgxNDAKQ3JlYXRlZCB3aXRoIEhvbGRlci5qcyAyLjYuMC4KTGVhcm4gbW9yZSBhdCBodHRwOi8vaG9sZGVyanMuY29tCihjKSAyMDEyLTIwMTUgSXZhbiBNYWxvcGluc2t5IC0gaHR0cDovL2ltc2t5LmNvCi0tPjxkZWZzPjxzdHlsZSB0eXBlPSJ0ZXh0L2NzcyI+PCFbQ0RBVEFbI2hvbGRlcl8xNTVmNmNmM2MyYiB0ZXh0IHsgZmlsbDojQUFBQUFBO2ZvbnQtd2VpZ2h0OmJvbGQ7Zm9udC1mYW1pbHk6QXJpYWwsIEhlbHZldGljYSwgT3BlbiBTYW5zLCBzYW5zLXNlcmlmLCBtb25vc3BhY2U7Zm9udC1zaXplOjEwcHQgfSBdXT48L3N0eWxlPjwvZGVmcz48ZyBpZD0iaG9sZGVyXzE1NWY2Y2YzYzJiIj48cmVjdCB3aWR0aD0iMTQwIiBoZWlnaHQ9IjE0MCIgZmlsbD0iI0VFRUVFRSIvPjxnPjx0ZXh0IHg9IjQ0LjY5NTMxMjUiIHk9Ijc0LjUiPjE0MHgxNDA8L3RleHQ+PC9nPjwvZz48L3N2Zz4=" data-holder-rendered="true" style="width: 140px; height: 140px;">
+        <br>
+        <img data-src="holder.js/140x140" class="img-circle" alt="140x140" src="http://2.bp.blogspot.com/-Sla8M5YPxvQ/VOSjOG0nORI/AAAAAAAAALw/r-RolACwRHw/s1600/aristoteles-portrait.png" data-holder-rendered="true" style="width: 140px; height: 140px;">
+        <h1>
+          El sabio
+        </h1>
       </center>
-      <div id="tarjeta" style="background-image: url(img/fondo3.gif); padding: 5%; margin: 5%; border-radius: 15px;">
-        <h2>Configuracion</h2>
+      <!--<div class="tarjeta" style="">
+         <h2>Configuracion</h2>
         <hr/>
         <p>Cantidad de jugadores</p>
             <input type="number" min="2" name="jugadores" id="jugadores" required="true" value="2"></br>
-      </div>
+      </div> -->
       <center>
             <input type="button"  class="btn btn-primary btn-lg" value="?" id="help">
             <button class="btn btn-primary btn-lg" id="siguientep2"><span class="glyphicon glyphicon-asterisk" aria-hidden="true"></span></br></button>
@@ -220,8 +272,20 @@ $(document).ready(function(){
     </div>
 
     <div id="p2">
-      <div id="tarjeta" style="background-image: url(img/fondo3.gif); padding: 5%; margin: 5%; border-radius: 15px;">
-          <form class="form-horizontal" id="configuracion" >
+      <div class="tarjeta">
+          <div class="form-horizontal" id="configuracion" >
+            <div class="form-group form-group-lg">
+              <label class="col-sm-2 control-label" for="formGroupInputLarge">Cantidad de jugadores</label>
+              <div class="col-sm-10">
+                <input class="form-control" type="number" min="2" name="jugadores" id="jugadores" required="true" value="2" placeholder="Segundos">
+              </div>
+            </br>
+            <center>    
+              <button class="btn btn-primary btn-lg" id="agregarEquipos">Agregar Equipos</button>
+            </center>
+        
+            </div>
+            
             <div class="form-group form-group-lg">
               <label class="col-sm-2 control-label" for="formGroupInputLarge">Tiempo por partida</label>
               <div class="col-sm-10">
@@ -234,7 +298,9 @@ $(document).ready(function(){
                 <input class="form-control" type="number" min="2" name="maxPuntos" id="maxPuntos" required="true" value="2">
               </div>
             </div>
-          </form>
+            <div id="equipos">
+            </div>
+          </div>
       </div>
       <center>
         <button class="btn btn-primary btn-lg siguientep3"> <span class="glyphicon glyphicon-play" aria-hidden="true"></span></button>
@@ -244,7 +310,7 @@ $(document).ready(function(){
     </div>
 
     <div id="p3">
-      <div id="tarjeta" class="pregunta" style="background-image: url(img/fondo3.gif); padding: 5%; margin: 5%; border-radius: 15px;">
+      <div class="tarjeta pregunta">
         <div id="pregunta">
         </div>
         <div id="showRespuesta">
@@ -256,12 +322,14 @@ $(document).ready(function(){
         <button type="button" id="correcto" class="btn btn-primary btn-lg"><span class="glyphicon glyphicon-ok" aria-hidden="true"></button>
         <button type="button" class="btn btn-primary btn-lg" id="verRespuesta"> <span class="glyphicon glyphicon-eye-open" aria-hidden="true"></button>
         <button type="button" class="btn btn-primary btn-lg" value="Finalizar" id="finalizar"> <span class="glyphicon glyphicon-remove" aria-hidden="true"></button>
+        <button type="button" class="btn btn-primary btn-lg" id="mute"> <span class="glyphicon glyphicon-volume-off" aria-hidden="true"></button>
+        <button type="button" class="btn btn-primary btn-lg" id="sonido"> <span class="glyphicon glyphicon-volume-up" aria-hidden="true"></button>
       </center>
     </div>
    
     </div>
-    <div id="p4">
-        <div id="tarjeta" style="background-image: url(img/fondo3.gif); padding: 5%; margin: 5%; border-radius: 15px;">
+    <div id="p4" >
+        <div class="tarjeta">
           <center>
             <h1>Puntuacion</h1>
           </center>
@@ -272,6 +340,27 @@ $(document).ready(function(){
           <button type="button" id="siguiente" class="btn btn-primary btn-lg"><span class="glyphicon glyphicon-step-forward" aria-hidden="true"></button>
         </center>
     </div>
+
+    <div id="p5">
+        <div class="tarjeta">
+          <center>
+            <h1>Reglas</h1>
+          </center>
+          <p>
+            Bievenido al Sabio seguramente estes aqui para jugar con la reglas pensadas sobre este juego, bien aqui van:
+          </p>
+          <p>
+            El primero que llegue a los puntos configurados al limite de cantidad de puntos sera el ganador.<br>
+          </p>
+          <p>
+            Al tocar un pregunta del tipo todos juegan los equipos podran utilizar el tiempo que le queda al equipo que actualmente este jugando y luego se debera definir cual de los equipos salio ganador. 
+            Esto le dara el turno al equipo que gano salteando a los demas equipos.
+          </p>
+
+        </div>
+        <center><button type="button" id="okAyuda" class="btn btn-primary btn-lg"><span class="glyphicon glyphicon-ok" aria-hidden="true"></button></center>
+          
+    </div>    
     
 </body>
 </html>
