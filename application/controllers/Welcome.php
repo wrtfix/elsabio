@@ -1,5 +1,6 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
+header('Access-Control-Allow-Origin: *');
 
 class Welcome extends CI_Controller {
 
@@ -42,8 +43,14 @@ class Welcome extends CI_Controller {
 
 	public function getPreguntas()
 	{
+		$this->output->set_header("Access-Control-Allow-Origin: *");
+		$this->output->set_header("Access-Control-Expose-Headers: Access-Control-Allow-Origin");
+		$this->output->set_status_header(200);
+		$this->output->set_content_type('application/json');
+		$this->output->_display();
+
 		$respuesta = json_encode($this->preguntas->getPreguntas());
-		print_r($respuesta); 
+		echo $respuesta; 
 	}
 
 

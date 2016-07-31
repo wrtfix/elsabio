@@ -4,6 +4,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 <html lang="en">
 
 <head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="stylesheet" href="css/css/bootstrap.css" >
 <script src="js/jquery.min.js"></script>
 <script src="js/bootstrap.min.js" ></script>    
@@ -18,10 +19,11 @@ var equipos = 2;
 var proximo_equipo = 1;
 var nombres=[];
 var tiempo=60000;
-var maxPuntos = 2;
+var maxPuntos = 25;
 var url = "<?=base_url() ?>index.php/welcome/getPreguntas";
 var urlKey = "<?=base_url() ?>index.php/welcome/getKey";
 var volumenAudio = true;
+var preguntas_realizadas=[];
 
 function regresiva(){
     var fiveSeconds = new Date().getTime() + tiempo;
@@ -47,7 +49,13 @@ function validarGanador(equipo){
 
 
 function proximaPregunta(){
-  return Math.floor((Math.random() * result.length));
+  valorActual = Math.floor((Math.random() * result.length));
+  while(valorActual in preguntas_realizadas){
+      valorActual = Math.floor((Math.random() * result.length));
+  }
+  preguntas_realizadas.push(valorActual);
+  localStorage.setItem("preguntas_realizadas",  JSON.stringify(preguntas_realizadas));
+  return valorActual;
 }
 
 function getProximoEquipo(){
@@ -60,7 +68,7 @@ function getProximoEquipo(){
 function getPregunta(equipo){
     inicio = proximaPregunta();
     $("#pregunta").html("");
-    $("#pregunta").append("<h2> <center> Juega "+equipo+" <center> </h2>");
+    $("#pregunta").append("<h2> <center> "+equipo+" <center> </h2>");
     $("#pregunta").append("<h3>"+result[inicio].pregunta+"</h3><p>"+result[inicio].opciones+"</p>");
     $("#showRespuesta").html("");
 }
@@ -74,16 +82,18 @@ function getRespuesta(){
 $(document).ready(function(){
 
     var audioElement = document.createElement('audio');
-        audioElement.setAttribute('src', 'sounds/clock.mp3');
+        audioElement.setAttribute('src', 'sounds/clock.ogg');
         audioElement.setAttribute('loop', 'loop');
         
-    var audioElement3 = document.createElement('audio');
-        audioElement3.setAttribute('src', 'sounds/correcto.mp3');
-
     var audioElement2 = document.createElement('audio');
-        audioElement2.setAttribute('src', 'sounds/incorrecto.mp3');
+        audioElement2.setAttribute('src', 'sounds/correcto.ogg');
 
-    
+    var audioElement3 = document.createElement('audio');
+        audioElement3.setAttribute('src', 'sounds/incorrecto.ogg');
+
+    window.onbeforeunload = function() {
+        return "Dude, are you sure you want to leave? Think of the kittens!";
+    }    
 
     //TODO (Refactor) Validacion de perguntas existentes
     var save = localStorage.getItem("preguntas");
@@ -107,6 +117,10 @@ $(document).ready(function(){
 
     //TODO (Refactor) Validacion de actulizacion de nuevas preguntas
     var version = localStorage.getItem("version");
+    obtenerPreguntasRealizadas = localStorage.getItem("preguntas_realizadas");
+    if (obtenerPreguntasRealizadas!=null){
+      preguntas_realizadas = JSON.parse(obtenerPreguntasRealizadas);
+    }
     if (save != null){
       max = JSON.parse(save);
     }
@@ -128,21 +142,21 @@ $(document).ready(function(){
       });
     }
 
-
-
-
     $("#siguiente").click(function(){
         $("#clock").show();
         $("#p4").hide();
         $("#finalizar").hide();
         $("#p3").show();
-        getPregunta(getProximoEquipo());
+        var proximo = getProximoEquipo();
+        getPregunta(proximo);
         audioElement.play();
         $("#finalizar").show();
         regresiva();
         $("#correcto").show();
-
-     });
+        var elem = "#"+nombres[proximo_equipo].replace(" ","_");
+        var total = parseInt($(elem).val());
+        $("#score").html("Score: "+total);
+    });
 
     $("#agregarEquipos").click(function(){
       var aux = 1;
@@ -152,6 +166,7 @@ $(document).ready(function(){
           $("#equipos").append("<div class='form-group form-group-lg'><label class='col-sm-2 control-label' for='formGroupInputLarge'>Equipo "+aux+"</label><div class='col-sm-10'><input type='text' class='nombre form-control' name='equipo"+i+"' value='Equipo "+aux+"'/></div>");
             aux = aux + 1;
       }
+      $(".siguientep3").attr("disabled",false);
     });
 
     $("#siguientep2").click(function(){
@@ -162,20 +177,14 @@ $(document).ready(function(){
 
     $(".siguientep3").click(function(){
   
-      var aux = 1;
+      
       equipos = $("#jugadores").val();
-      $("#equipos").html("");
-      for (i = 0; i < equipos; i++) { 
-          $("#equipos").append("<div class='form-group form-group-lg'><label class='col-sm-2 control-label' for='formGroupInputLarge'>Equipo "+aux+"</label><div class='col-sm-10'><input type='text' class='nombre form-control' name='equipo"+i+"' value='Equipo "+aux+"'/></div>");
-            aux = aux + 1;
-      }
-
       $("#p1").hide();
       $("#p2").hide();
       $("#p3").show();
   
-      $("#puntuacion").html("<tbody> <tr><td>Equios</td><td>Puntaje</td></tr>");
-      nombre = [];
+      $("#puntuacion").html("<tbody> <tr><td>Equipos</td><td>Puntaje</td></tr>");
+      
       $(".nombre").each(function(elem){
         var nombre = $(this).val();
         nombres.push(nombre);
@@ -190,9 +199,24 @@ $(document).ready(function(){
             tiempo = valor * 1000;
         }
         regresiva();
+        var elem = "#"+nombres[proximo_equipo].replace(" ","_");
+        var total = parseInt($(elem).val());
+        $("#score").html("Score: "+total);
      });
 
+    $("#play").click(function(){
+      $("#equipos").html("");
+      var aux = 1;
+      for (i = 0; i < equipos; i++) { 
+          $("#equipos").append("<div class='form-group form-group-lg'><label class='col-sm-2 control-label' for='formGroupInputLarge'>Equipo "+aux+"</label><div class='col-sm-10'><input type='text' class='nombre form-control' name='equipo"+i+"' value='Equipo "+aux+"'/></div>");
+            aux = aux + 1;
+      }
+      $(".siguientep3").trigger("click");
+    });
+
     $("#finalizar").click(function(){
+       $("#finalizar").attr("disabled",true);
+       $("#correcto").attr("disabled",true);
        $("#p3").hide();
        $("#p4").show();
        $("#clock").hide();
@@ -204,15 +228,20 @@ $(document).ready(function(){
     });
 
     $("#verRespuesta").click(function(){
+        $("#finalizar").attr("disabled",false);
+        $("#correcto").attr("disabled",false);
        $("#showRespuesta").html("Repuesta: "+result[inicio].repuesta);
     });
 
     $("#correcto").click(function(){
+        $("#finalizar").attr("disabled",true);
+        $("#correcto").attr("disabled",true);
         var elem = "#"+nombres[proximo_equipo].replace(" ","_");
         var valor = parseInt($(elem).val()) + 1;
         $(elem).val(valor);
         audioElement2.play();
-        getPregunta(nombres[proximo_equipo]);
+        getPregunta(nombres[proximo_equipo])
+        $("#score").html("Score: "+valor);;
     });
 
     $("#help").click(function(){
@@ -230,11 +259,15 @@ $(document).ready(function(){
         $(this).hide();
         $("#sonido").show();
         audioElement.muted = true;  
+        audioElement2.muted = true;  
+        audioElement3.muted = true;  
     });
     $("#sonido").click(function(){
         $(this).hide();
         $("#mute").show();
         audioElement.muted = false;  
+        audioElement2.muted = false;  
+        audioElement3.muted = false;  
     });
 });
 
@@ -258,17 +291,19 @@ body{
           El sabio
         </h1>
       </center>
-      <!--<div class="tarjeta" style="">
-         <h2>Configuracion</h2>
-        <hr/>
-        <p>Cantidad de jugadores</p>
-            <input type="number" min="2" name="jugadores" id="jugadores" required="true" value="2"></br>
-      </div> -->
+      <div class="tarjeta">
+        <center>
+          Colabora con el sabio cargando tus propias preguntas en el siguiente <a href="https://docs.google.com/forms/d/e/1FAIpQLSfd1FjTMjMFSnt2vbYHx1zr9J-g6lk9tDbr5mICjeWomMwOoA/viewform">formulario</a></br>
+          Dudas o sugerencias enviarlas <a href="mailto:wrtfix@gmail.com?Subject=Contacto%20El%20Sabio" target="_top">aquí</a>
+        </center>
+      </br>
       <center>
             <input type="button"  class="btn btn-primary btn-lg" value="?" id="help">
             <button class="btn btn-primary btn-lg" id="siguientep2"><span class="glyphicon glyphicon-asterisk" aria-hidden="true"></span></br></button>
-            <button type="button" class="btn btn-primary btn-lg siguientep3"> <span class="glyphicon glyphicon-play" aria-hidden="true"></span></button>
+            <button type="button" class="btn btn-primary btn-lg" id="play"> <span class="glyphicon glyphicon-play" aria-hidden="true"></span></button>
       </center>
+      </div>
+      
     </div>
 
     <div id="p2">
@@ -281,7 +316,7 @@ body{
               </div>
             </br>
             <center>    
-              <button class="btn btn-primary btn-lg" id="agregarEquipos">Agregar Equipos</button>
+              <button class="btn btn-primary btn-lg" id="agregarEquipos" >Agregar Equipos</button>
             </center>
         
             </div>
@@ -295,36 +330,44 @@ body{
             <div class="form-group form-group-lg">
               <label class="col-sm-2 control-label" for="formGroupInputLarge">Cantidad de puntos</label>
               <div class="col-sm-10">
-                <input class="form-control" type="number" min="2" name="maxPuntos" id="maxPuntos" required="true" value="2">
+                <input class="form-control" type="number" min="2" name="maxPuntos" id="maxPuntos" required="true" value="25">
               </div>
             </div>
             <div id="equipos">
             </div>
           </div>
-      </div>
       <center>
-        <button class="btn btn-primary btn-lg siguientep3"> <span class="glyphicon glyphicon-play" aria-hidden="true"></span></button>
+        <button class="btn btn-primary btn-lg siguientep3" disabled> <span class="glyphicon glyphicon-play" aria-hidden="true"></span></button>
       </center>
+      </div>
+      
        </div>
       </div>
     </div>
 
     <div id="p3">
-      <div class="tarjeta pregunta">
+      <div class="tarjeta pregunta" >
+        <div id="clock" style="float: right;"></div>
+        <div id="score" style="float: left;"></div>
         <div id="pregunta">
         </div>
+        <b>
         <div id="showRespuesta">
         </div>
-          <span id="clock"></span>
-      </div>
-
+      </b>
+          
+        </br>
+        </br>
       <center>
-        <button type="button" id="correcto" class="btn btn-primary btn-lg"><span class="glyphicon glyphicon-ok" aria-hidden="true"></button>
-        <button type="button" class="btn btn-primary btn-lg" id="verRespuesta"> <span class="glyphicon glyphicon-eye-open" aria-hidden="true"></button>
-        <button type="button" class="btn btn-primary btn-lg" value="Finalizar" id="finalizar"> <span class="glyphicon glyphicon-remove" aria-hidden="true"></button>
+        <button type="button" id="correcto" class="btn btn-primary btn-lg" disabled><span class="glyphicon glyphicon-ok" aria-hidden="true"></button>
+        <button type="button" class="btn btn-primary btn-lg" id="verRespuesta" > <span class="glyphicon glyphicon-eye-open" aria-hidden="true"></button>
+        <button type="button" class="btn btn-primary btn-lg" value="Finalizar" id="finalizar" disabled> <span class="glyphicon glyphicon-remove" aria-hidden="true"></button>
         <button type="button" class="btn btn-primary btn-lg" id="mute"> <span class="glyphicon glyphicon-volume-off" aria-hidden="true"></button>
         <button type="button" class="btn btn-primary btn-lg" id="sonido"> <span class="glyphicon glyphicon-volume-up" aria-hidden="true"></button>
       </center>
+      </div>
+
+      
     </div>
    
     </div>
@@ -335,10 +378,11 @@ body{
           </center>
           <table class="table" id="puntuacion">
           </table>
-        </div>
         <center>
           <button type="button" id="siguiente" class="btn btn-primary btn-lg"><span class="glyphicon glyphicon-step-forward" aria-hidden="true"></button>
         </center>
+        </div>
+        
     </div>
 
     <div id="p5">
@@ -353,13 +397,11 @@ body{
             El primero que llegue a los puntos configurados al limite de cantidad de puntos sera el ganador.<br>
           </p>
           <p>
-            Al tocar un pregunta del tipo todos juegan los equipos podran utilizar el tiempo que le queda al equipo que actualmente este jugando y luego se debera definir cual de los equipos salio ganador. 
+            Al tocar una pregunta del tipo todos juegan los equipos podran utilizar el tiempo que le queda al equipo que actualmente este jugando y luego se debera definir cual de los equipos salio ganador. 
             Esto le dara el turno al equipo que gano salteando a los demas equipos.
           </p>
-
-        </div>
         <center><button type="button" id="okAyuda" class="btn btn-primary btn-lg"><span class="glyphicon glyphicon-ok" aria-hidden="true"></button></center>
-          
+        </div>
     </div>    
     
 </body>
